@@ -1,0 +1,12 @@
+{
+"type": "FeatureCollection",
+"name": "survey_MUSTARD_yield",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2020, "COMMODITY_DESC": "MUSTARD", "VALUE": 889.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2021, "COMMODITY_DESC": "MUSTARD", "VALUE": 486.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2022, "COMMODITY_DESC": "MUSTARD", "VALUE": 554.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2023, "COMMODITY_DESC": "MUSTARD", "VALUE": 625.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2024, "COMMODITY_DESC": "MUSTARD", "VALUE": 577.0, "lon": null, "lat": null }, "geometry": null }
+]
+}

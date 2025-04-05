@@ -1,0 +1,12 @@
+{
+"type": "FeatureCollection",
+"name": "survey_RAPESEED_yield",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2020, "COMMODITY_DESC": "RAPESEED", "VALUE": 1971.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2021, "COMMODITY_DESC": "RAPESEED", "VALUE": 1815.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2022, "COMMODITY_DESC": "RAPESEED", "VALUE": 1889.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2023, "COMMODITY_DESC": "RAPESEED", "VALUE": 2003.0, "lon": null, "lat": null }, "geometry": null },
+{ "type": "Feature", "properties": { "STATE_ALPHA": "US", "YEAR": 2024, "COMMODITY_DESC": "RAPESEED", "VALUE": 2019.0, "lon": null, "lat": null }, "geometry": null }
+]
+}

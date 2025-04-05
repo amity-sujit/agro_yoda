@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crop Yield Choropleth</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; }
+        #map { width: 800px; height: 600px; }
+        #controls { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label>Crop:</label>
+        <select id="cropSelect" onchange="updateMap()">
+            <option value="CORN">Corn</option>
+            <option value="SOYBEANS">Soybeans</option>
+            <option value="WHEAT">Wheat</option>
+            <option value="COTTON">Cotton</option>
+        </select>
+        <label>Year:</label>
+        <select id="yearSelect" onchange="updateMap()">
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+        </select>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        // Use relative path assuming served from the same directory structure
+        const surveyDataUrl = '../data/survey_crop_yield.geojson';
+        let surveyData;
+
+        // Load data once
+        fetch(surveyDataUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                surveyData = data;
+                updateMap();  // Initial render
+            })
+            .catch(error => console.error('Error loading GeoJSON:', error));
+
+        function updateMap() {
+            const crop = document.getElementById('cropSelect').value;
+            const year = document.getElementById('yearSelect').value;
+
+            if (!surveyData) return;  // Wait for data to load
+
+            // Filter data
+            const filteredFeatures = surveyData.features.filter(f => 
+                f.properties.COMMODITY_DESC === crop && f.properties.YEAR === parseInt(year)
+            );
+            const filteredData = {
+                type: 'FeatureCollection',
+                features: filteredFeatures
+            };
+
+            // Prepare data for Plotly
+            const states = filteredData.features.map(f => f.properties.STATE_ALPHA);
+            const values = filteredData.features.map(f => f.properties.VALUE || 0);
+
+            const data = [{
+                type: 'choropleth',
+                locations: states,
+                locationmode: 'USA-states',
+                z: values,
+                colorscale: 'YlGn',
+                autocolorscale: false,
+                marker: { line: { color: 'black', width: 1 } },
+                colorbar: { title: 'Yield (Units Vary)' }
+            }];
+
+            const layout = {
+                title: `${crop} Yield by State (${year})`,
+                geo: {
+                    scope: 'usa',
+                    framecolor: 'black',
+                    showframe: true
+                },
+                width: 800,
+                height: 600
+            };
+
+            Plotly.newPlot('map', data, layout);
+        }
+    </script>
+</body>
+</html>

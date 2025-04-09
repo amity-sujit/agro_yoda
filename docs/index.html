@@ -156,7 +156,7 @@
     
             sourceSelect.value = source;
             cropSelect.value = crop;
-            yearSelect.value = year;
+            if (year) yearSelect.value = year;
         }
     
         async function updateYearsAndMap(source, crop) {
@@ -165,7 +165,7 @@
     
             if (!surveyData[dataKey]) {
                 const data = await loadData(source, crop);
-                if (!data) return false;
+                if (!data) return [];
             }
     
             const availableYears = [...new Set(surveyData[dataKey].features.map(f => f.properties.YEAR))].sort();
@@ -179,7 +179,7 @@
             const year = document.getElementById('yearSelect').value;
             const dataKey = `${source}_${crop}`;
     
-            if (!surveyData[dataKey]) return;
+            if (!surveyData[dataKey] || !year) return;
     
             const filteredFeatures = surveyData[dataKey].features.filter(f => 
                 f.properties.YEAR === parseInt(year)
@@ -229,20 +229,20 @@
             let cropIndex = 0;
             let yearIndex = 0;
     
-            // Initial load of first combination
-            const initialYears = await updateYearsAndMap(sources[sourceIndex], crops[cropIndex]);
-            if (!initialYears) return;
+            // Initial load
+            let availableYears = await updateYearsAndMap(sources[sourceIndex], crops[cropIndex]);
+            if (!availableYears.length) return;
     
-            updateDropdowns(sources[sourceIndex], crops[cropIndex], initialYears[yearIndex]);
+            updateDropdowns(sources[sourceIndex], crops[cropIndex], availableYears[yearIndex]);
             updateMap();
     
             window.rotationInterval = setInterval(async () => {
                 const currentSource = sources[sourceIndex];
                 const currentCrop = crops[cropIndex];
-                const availableYears = await updateYearsAndMap(currentSource, currentCrop);
                 
-                if (!availableYears) {
-                    // Skip this combination if data failed to load
+                availableYears = await updateYearsAndMap(currentSource, currentCrop);
+                
+                if (!availableYears.length) {
                     cropIndex = (cropIndex + 1) % crops.length;
                     if (cropIndex === 0) {
                         sourceIndex = (sourceIndex + 1) % sources.length;
@@ -264,12 +264,12 @@
             }, 5000);
         }
     
-        // Keep these functions for manual dropdown changes
+        // For manual dropdown changes
         window.updateYearsAndMap = async function() {
             const source = document.getElementById('sourceSelect').value;
             const crop = document.getElementById('cropSelect').value;
             const years = await updateYearsAndMap(source, crop);
-            if (years) {
+            if (years.length) {
                 updateDropdowns(source, crop, years[0]);
                 updateMap();
             }
@@ -278,7 +278,6 @@
         window.updateMap = updateMap;
     
         startRotation();
-    </script>
-    
+    </script> 
 </body>
 </html>

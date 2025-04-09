@@ -125,73 +125,58 @@
     <div id="map"></div>
     <script>
         let surveyData = {};
-    
-        function loadData(source, crop) {
+
+        function loadData() {
+            const crop = document.getElementById('cropSelect').value;
+            const source = document.getElementById('sourceSelect').value;
             const dataUrl = `data/${source}_${crop}_yield.geojson`;
-    
-            return fetch(dataUrl)
+
+            fetch(dataUrl)
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .then(data => {
-                    surveyData[`${source}_${crop}`] = data;
-                    return data;
+                    surveyData[crop] = data;
+                    updateYearsAndMap();
                 })
-                .catch(error => {
-                    console.error('Error loading GeoJSON:', error);
-                    return null;
-                });
+                .catch(error => console.error('Error loading GeoJSON:', error));
         }
-    
-        function getSelectOptions(selectId) {
-            const select = document.getElementById(selectId);
-            return Array.from(select.options).map(option => option.value);
-        }
-    
-        function updateDropdowns(source, crop, year) {
-            const sourceSelect = document.getElementById('sourceSelect');
-            const cropSelect = document.getElementById('cropSelect');
+
+        function updateYearsAndMap() {
+            const source = document.getElementById('sourceSelect').value;
+            const crop = document.getElementById('cropSelect').value;
             const yearSelect = document.getElementById('yearSelect');
-    
-            sourceSelect.value = source;
-            cropSelect.value = crop;
-            if (year) yearSelect.value = year;
-        }
-    
-        async function updateYearsAndMap(source, crop) {
-            const yearSelect = document.getElementById('yearSelect');
-            const dataKey = `${source}_${crop}`;
-    
-            if (!surveyData[dataKey]) {
-                const data = await loadData(source, crop);
-                if (!data) return [];
+
+            if (!surveyData[crop]) {
+                loadData();
+                return;
             }
-    
-            const availableYears = [...new Set(surveyData[dataKey].features.map(f => f.properties.YEAR))].sort();
+
+            const availableYears = [...new Set(surveyData[crop].features.map(f => f.properties.YEAR))].sort();
             yearSelect.innerHTML = availableYears.map(year => `<option value="${year}">${year}</option>`).join('');
-            return availableYears;
+
+            updateMap();
         }
-    
+
         function updateMap() {
             const source = document.getElementById('sourceSelect').value;
             const crop = document.getElementById('cropSelect').value;
             const year = document.getElementById('yearSelect').value;
-            const dataKey = `${source}_${crop}`;
-    
-            if (!surveyData[dataKey] || !year) return;
-    
-            const filteredFeatures = surveyData[dataKey].features.filter(f => 
+
+            if (!surveyData[crop]) return;
+
+            const filteredFeatures = surveyData[crop].features.filter(f => 
                 f.properties.YEAR === parseInt(year)
             );
             const filteredData = {
                 type: 'FeatureCollection',
                 features: filteredFeatures
             };
-    
+
             const states = filteredData.features.map(f => f.properties.STATE_ALPHA);
             const values = filteredData.features.map(f => f.properties.VALUE || 0);
-    
+
             const data = [{
                 type: 'choropleth',
                 locations: states,
@@ -202,7 +187,7 @@
                 marker: { line: { color: 'black', width: 1 } },
                 colorbar: { title: 'Yield (Units Vary)' }
             }];
-    
+
             const layout = {
                 title: `${source.toUpperCase()} ${crop} Yield by State (${year})`,
                 geo: {
@@ -213,71 +198,11 @@
                 width: 800,
                 height: 600
             };
-    
+
             Plotly.newPlot('map', data, layout);
         }
-    
-        async function startRotation() {
-            if (window.rotationInterval) {
-                clearInterval(window.rotationInterval);
-            }
-    
-            const sources = getSelectOptions('sourceSelect');
-            const crops = getSelectOptions('cropSelect');
-            
-            let sourceIndex = 0;
-            let cropIndex = 0;
-            let yearIndex = 0;
-    
-            // Initial load
-            let availableYears = await updateYearsAndMap(sources[sourceIndex], crops[cropIndex]);
-            if (!availableYears.length) return;
-    
-            updateDropdowns(sources[sourceIndex], crops[cropIndex], availableYears[yearIndex]);
-            updateMap();
-    
-            window.rotationInterval = setInterval(async () => {
-                const currentSource = sources[sourceIndex];
-                const currentCrop = crops[cropIndex];
-                
-                availableYears = await updateYearsAndMap(currentSource, currentCrop);
-                
-                if (!availableYears.length) {
-                    cropIndex = (cropIndex + 1) % crops.length;
-                    if (cropIndex === 0) {
-                        sourceIndex = (sourceIndex + 1) % sources.length;
-                    }
-                    return;
-                }
-    
-                yearIndex = (yearIndex + 1) % availableYears.length;
-    
-                if (yearIndex === 0) {
-                    cropIndex = (cropIndex + 1) % crops.length;
-                    if (cropIndex === 0) {
-                        sourceIndex = (sourceIndex + 1) % sources.length;
-                    }
-                }
-    
-                updateDropdowns(sources[sourceIndex], crops[cropIndex], availableYears[yearIndex]);
-                updateMap();
-            }, 5000);
-        }
-    
-        // For manual dropdown changes
-        window.updateYearsAndMap = async function() {
-            const source = document.getElementById('sourceSelect').value;
-            const crop = document.getElementById('cropSelect').value;
-            const years = await updateYearsAndMap(source, crop);
-            if (years.length) {
-                updateDropdowns(source, crop, years[0]);
-                updateMap();
-            }
-        }
-    
-        window.updateMap = updateMap;
-    
-        startRotation();
-    </script> 
+
+        updateYearsAndMap();
+    </script>
 </body>
 </html>
